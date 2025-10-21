@@ -1,0 +1,88 @@
+class Solution {
+public:
+    
+    bool fRE(int i,int sum,vector<int>&arr){
+        if(sum == 0) return true;
+        if(i==0) return (arr[0]==sum);
+        
+        bool nontake = fRE(i-1,sum,arr);
+        bool take = false;
+        if(sum >= arr[i]) take = fRE(i-1,sum-arr[i],arr);
+        
+        return (take||nontake);
+    }
+
+    bool fMemo(int i,int sum,vector<int>&arr,vector<vector<int>> &dp){
+        if(sum == 0) return true;
+        if(i==0) return (arr[0]==sum);
+        
+        if(dp[i][sum] != -1) return dp[i][sum];
+        
+        bool nontake = fMemo(i-1,sum,arr,dp);
+        bool take = false;
+        if(sum >= arr[i]) take = fMemo(i-1,sum-arr[i],arr,dp);
+        
+        return dp[i][sum] = (take||nontake);
+    }
+
+    bool fTab(vector<int>&arr,int sum){
+        int n = arr.size();
+        vector<vector<bool>> dp(n,vector<bool> (sum+1,false));
+        
+        
+        for(int i=0;i<n;i++) dp[i][0] = true;
+        if(arr[0] <= sum) dp[0][arr[0]] = true;
+        
+        
+        for(int i=1;i<n;i++){
+            for(int target = 1;target<=sum;target++){
+                bool nontake = dp[i-1][target];
+                bool take = false;
+                if(target >= arr[i]) take = dp[i-1][target-arr[i]];
+                
+                dp[i][target] = (take||nontake);
+            }
+        }
+        
+        return dp[n-1][sum];
+    }
+    
+    bool fSO(vector<int>&arr,int sum){
+        int n = arr.size();
+        vector<bool> prev(sum+1,false),curr(sum+1,false);
+        
+        prev[0] = curr[0]=true;
+        if(arr[0]<=sum) prev[arr[0]] = true;
+        
+        
+        for(int i=1;i<n;i++){
+            for(int target = 1;target<=sum;target++){
+                bool nontake = prev[target];
+                bool take = false;
+                if(target >= arr[i]) take = prev[target-arr[i]];
+                
+                curr[target] = (take||nontake);
+            }
+            prev = curr;
+        }
+        
+        return prev[sum];
+    }
+    
+    bool canPartition(vector<int>& nums) {
+        int n = nums.size();
+        int sum = accumulate(nums.begin(),nums.end(),0);
+        if(sum &1) return false;
+        int k = sum/2;
+
+        // return fRE(n-1,k,nums);
+
+        // vector<vector<int>> dp(n,vector<int> (k+1,-1));
+        // return fMemo(n-1,k,nums,dp);
+        
+        return fTab(nums,k);
+         
+        // return fSO(nums,k); 
+
+    }
+};
